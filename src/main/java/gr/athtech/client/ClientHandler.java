@@ -166,7 +166,10 @@ public class ClientHandler implements Runnable {
 
 							// Get auction and current highest bid
 							auction = AuctionServer.getAuctions().get(Integer.parseInt(args[0]));
-							double highestBid = auction.getHighestBid();
+							double highestBid = 0;
+							if(auction != null){
+								highestBid = auction.getHighestBid();
+							}
 
 							// Check if bid is higher than current highest bid
 							if (Double.parseDouble(args[1]) <= highestBid) {
