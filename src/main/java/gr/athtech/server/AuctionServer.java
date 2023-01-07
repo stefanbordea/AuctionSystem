@@ -1,14 +1,22 @@
 package gr.athtech.server;
 
+import gr.athtech.auction.Auction;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Map;
+import java.util.Set;
 
 public class AuctionServer extends Thread {
 
 	public static int SERVER_PORT = 10000;
+	public static int BID_TIMEOUT = 5000;
+	private Map<String, Auction> auctions;
+	private Map<InetAddress, Set<Integer>> clients;
 	private ServerSocket serverSocket;
 	private ObjectInputStream inputFromClient;
 	private ObjectOutputStream outputToClient;

@@ -41,58 +41,75 @@ public class AuctionClient {
 		}
 	}
 
-	public void placeItemForAuction() throws Exception{
-		try{
-			Scanner scanner = new Scanner(System.in);
-			AuctionItem auctionItem = new AuctionItem();
+	public void displayMenu() throws Exception {
+		Scanner scanner = new Scanner(System.in);
+		System.out.println("What would you like to do?");
+		System.out.println("1) Advertise an item for auction");
+		System.out.println("2) List active auctions");
+		System.out.println("3) Register in an auction");
+		System.out.println("4) Place a bid");
+		System.out.println("5) Check highest bid");
+		System.out.println("6) Withdraw from an auction");
+		System.out.println("7) Disconnect from server");
+		int choice = scanner.nextInt();
 
-				System.out.println("Specify item name: ");
-				auctionItem.setName(scanner.nextLine().trim());
-				System.out.println("Specify item description: ");
-				auctionItem.setDescription(scanner.nextLine().trim());
-				System.out.println("Specify item starting price: ");
-				auctionItem.setStartingPrice(Double.valueOf(scanner.nextLine().trim()));
-			do{
-				System.out.println("Would you like to set a timer for your auction? (Y/N): ");
-				auctionItem.setName(scanner.nextLine().toLowerCase().trim());
-				switch(scanner.nextLine()){
-					case "y":
-						break;
+		switch (choice) {
+			case 1:
+				this.placeItemForAuction();
+				break;
+			case 2:
 
-				}
-			}while (!scanner.hasNextLine() || !scanner.hasNext("[yn]"));
+				break;
+			case 3:
 
+				break;
+			case 4:
 
-		} catch (Exception e){
+				break;
+			case 5:
 
+				break;
+			case 6:
+
+				break;
+			case 7:
+				socket.close();
+				break;
+			default:
+				System.out.println("Invalid command");
 		}
 
 	}
 
+	public void placeItemForAuction() throws Exception {
+		try {
+			Scanner scanner = new Scanner(System.in);
+			AuctionItem auctionItem = new AuctionItem();
 
+			System.out.println("Specify item name: ");
+			auctionItem.setName(scanner.nextLine().trim());
+			System.out.println("Specify item description: ");
+			auctionItem.setDescription(scanner.nextLine().trim());
+			System.out.println("Specify item starting price: ");
+			auctionItem.setStartingPrice(Double.valueOf(scanner.nextLine().trim()));
+			do {
+				System.out.println("Would you like to set a timer for your auction? (Y/N): ");
+				auctionItem.setName(scanner.nextLine().toLowerCase().trim());
+				if ("y".equals(scanner.nextLine())) {
+				}
+			} while (!scanner.hasNextLine() || !scanner.hasNext("[yn]"));
+
+		} catch (Exception e) {
+
+		}
+
+	}
 
 	public static void main(String[] args) throws Exception {
 
 		AuctionClient ac = new AuctionClient();
 
 		ac.connectToAuctionServer();
-		ac.placeItemForAuction();
-
-		//		Scanner scan = new Scanner(System.in);
-		//		Socket s = new Socket("localhost", 10000);
-		//		DataOutputStream dout = new DataOutputStream(s.getOutputStream());
-		//		DataInputStream dis = new DataInputStream(s.getInputStream());
-		//		while (true) {
-		//			System.out.println("Write Your message");
-		//			String str = scan.nextLine();
-		//			dout.writeUTF(str);
-		//			dout.flush();
-		//			if (str.equals("bye")) {
-		//				dout.close();
-		//				s.close();
-		//				break;
-		//			}
-		//
-		//		}
+		ac.displayMenu();
 	}
 }
