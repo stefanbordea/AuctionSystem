@@ -91,6 +91,7 @@ public class ClientHandler implements Runnable {
 														  Double.parseDouble(args[2]), args[3]);
 							if (args[3].equals("time")) {
 								auction.setClosingTime(Integer.parseInt(args[4]));
+								auction.closeOnTimeExpiry();
 							} else if (!args[3].equals("bid")) {
 								out.println("Invalid closing type");
 								break;
@@ -176,6 +177,7 @@ public class ClientHandler implements Runnable {
 							// Update highest bid and bidder IP
 							auction.setHighestBid(Double.parseDouble(args[1]));
 							auction.setBidderIp(socket.getInetAddress().getHostAddress());
+							auction.setHighestBidderIp(socket.getInetAddress().getHostAddress());
 							// Notify all clients about new bid
 							for (ClientHandler handler : AuctionServer.getHandlers()) {
 								handler.sendMessage("NEW BID for auction with ID: " + auction.getId() + " for ITEM " +
