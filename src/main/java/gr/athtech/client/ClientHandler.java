@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -24,9 +26,6 @@ public class ClientHandler implements Runnable {
 	public ClientHandler(Socket socket) {
 		this.socket = socket;
 		registeredAuctions = new ArrayList<>();
-	}
-
-	public ClientHandler() {
 	}
 
 	// Send message to client
@@ -121,11 +120,6 @@ public class ClientHandler implements Runnable {
 							// Read auction ID from client
 							int auctionId = Integer.parseInt(args[0]);
 
-							// Check if auction ID is valid
-							if (checkForValidID(out, args, 0)) {
-								break;
-							}
-
 							// Get auction
 							auction = AuctionServer.getAuctions().get(auctionId);
 
@@ -153,11 +147,6 @@ public class ClientHandler implements Runnable {
 							out.println("You have been registered in the auction " + auctionId);
 							break;
 						case "bid":
-							// Check if auction ID is valid
-							if (checkForValidID(out, args, 0)) {
-								break;
-							}
-
 							// Check if client is registered in the auction
 							if (!isRegistered(Integer.parseInt(args[0]))) {
 								out.println("You are not registered in this auction");
@@ -206,8 +195,17 @@ public class ClientHandler implements Runnable {
 							// Get highest bid
 							highestBid = auction.getHighestBid();
 
+							// Calculate bid end time
+							Date endTime = new Date(auction.getTime().getTime() + auction.getClosingTime() * 60000L);
+							Duration duration = Duration.between(endTime.toInstant(), new Date().toInstant());
+
 							// Send highest bid and server time to client
-							out.println("Highest Bid: " + highestBid + " timestamp: " + auction.getTime());
+							out.println("Highest Bid: " + highestBid + " timestamp: " + auction.getTime() +
+												" remaining time: " + duration.abs()
+																		.toString()
+																		.substring(2)
+																		.replaceAll("(\\d[HMS])(?!$)", "$1 ")
+																		.toLowerCase());
 							break;
 						case "withdraw":
 							// Check if client is registered in the auction

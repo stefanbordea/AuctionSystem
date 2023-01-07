@@ -60,6 +60,6 @@ public class Auction {
 				// Remove auction from active auctions
 				AuctionServer.getAuctions().remove(id);
 			}
-		}, closingTime * 60000L);
+		}, this.getClosingTime() * 60000L);
 	}
 }
