@@ -1,115 +1,136 @@
 package gr.athtech.client;
 
-import gr.athtech.auction.AuctionItem;
-import gr.athtech.auction.Bidder;
-import gr.athtech.server.AuctionServer;
-
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class AuctionClient {
+	private static final String INPUT_AUCTION_ID = "Enter auction ID:";
 
-	private Socket socket;
-	private ObjectInputStream inputStreamFromServer;
-	private ObjectOutputStream outputStreamToServer;
-	private Object serverReply;
-	private Bidder bidder;
+	public static void main(String[] args) {
+		// Connect to the server
+		try (Socket socket = new Socket(InetAddress.getLocalHost().getHostAddress(), 3000);
+			 // Set up input and output streams for sending and receiving data
+			 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			 PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
-	private boolean connectToAuctionServer() {
-		try {
-			socket = new Socket(InetAddress.getLocalHost(), AuctionServer.SERVER_PORT);
-			outputStreamToServer = new ObjectOutputStream(socket.getOutputStream());
-			inputStreamFromServer = new ObjectInputStream(socket.getInputStream());
-			return true;
-		} catch (IOException e) {
-			System.out.println("CLIENT: Error Connecting to Server" + e.getMessage());
-			return false;
-		}
-	}
+			// Receive welcome message from server
+			System.out.println(in.readLine());
 
-	private boolean disconnectFromAuctionServer() {
-		try {
-			socket.close();
-			return true;
-		} catch (IOException e) {
-			System.out.println("CLIENT: Error Disconnecting from Server" + e.getMessage());
-			return false;
-		}
-	}
-
-	public void displayMenu() throws Exception {
-		Scanner scanner = new Scanner(System.in);
-		System.out.println("What would you like to do?");
-		System.out.println("1) Advertise an item for auction");
-		System.out.println("2) List active auctions");
-		System.out.println("3) Register in an auction");
-		System.out.println("4) Place a bid");
-		System.out.println("5) Check highest bid");
-		System.out.println("6) Withdraw from an auction");
-		System.out.println("7) Disconnect from server");
-		int choice = scanner.nextInt();
-
-		switch (choice) {
-			case 1:
-				this.placeItemForAuction();
-				break;
-			case 2:
-
-				break;
-			case 3:
-
-				break;
-			case 4:
-
-				break;
-			case 5:
-
-				break;
-			case 6:
-
-				break;
-			case 7:
-				socket.close();
-				break;
-			default:
-				System.out.println("Invalid command");
-		}
-
-	}
-
-	public void placeItemForAuction() throws Exception {
-		try {
+			// Set up scanner for reading user input
 			Scanner scanner = new Scanner(System.in);
-			AuctionItem auctionItem = new AuctionItem();
 
-			System.out.println("Specify item name: ");
-			auctionItem.setName(scanner.nextLine().trim());
-			System.out.println("Specify item description: ");
-			auctionItem.setDescription(scanner.nextLine().trim());
-			System.out.println("Specify item starting price: ");
-			auctionItem.setStartingPrice(Double.valueOf(scanner.nextLine().trim()));
-			do {
-				System.out.println("Would you like to set a timer for your auction? (Y/N): ");
-				auctionItem.setName(scanner.nextLine().toLowerCase().trim());
-				if ("y".equals(scanner.nextLine())) {
+			while (true) {
+				// Prompt user for action
+				System.out.println("Enter command (advertise, list, register, bid, check, withdraw, disconnect):");
+				String command = scanner.nextLine().trim();
+
+				// Process response from server
+				switch (command) {
+					case "advertise":
+						// Read item name, description, starting price, and closing type from user
+						System.out.println("Enter item name:");
+						String itemName = scanner.nextLine().replace(" ", "_");
+						System.out.println("Enter item description:");
+						String itemDescription = scanner.nextLine().replace(" ", "_");
+						System.out.println("Enter starting price:");
+						double startingPrice = scanner.nextDouble();
+						scanner.nextLine(); // consume newline character
+						System.out.println("Enter closing type (time or bid):");
+						String closingType = scanner.nextLine().toLowerCase().trim();
+						if (closingType.equals("time")) {
+							System.out.println("Enter closing time in minutes:");
+							int closingTime = scanner.nextInt();
+							scanner.nextLine(); // consume newline character
+							// Send command and item details to server
+							out.println(command + " " + itemName + " " + itemDescription + " " + startingPrice + " " +
+												closingType + " " + closingTime);
+						} else {
+							// Send command and item details to server
+							out.println(command + " " + itemName + " " + itemDescription + " " + startingPrice + " " +
+												closingType);
+						}
+						// Receive auction ID from server
+						int auctionId = Integer.parseInt(in.readLine());
+						System.out.println("Auction ID: " + auctionId);
+						break;
+					case "list":
+						out.println(command);
+						// Receive list of active auctions from server
+						String line;
+						while ((line = in.readLine()) != null && !line.isEmpty()) {
+							String auction = line;
+							System.out.println(auction);
+						}
+						break;
+					case "register":
+						// Read auction ID from user
+						System.out.println(INPUT_AUCTION_ID);
+						int id = scanner.nextInt();
+						scanner.nextLine(); // consume newline character
+
+						// Send auction ID to server
+						out.println(command + " " + id);
+
+						// Receive registration confirmation from server
+						String confirmation = in.readLine();
+						System.out.println(confirmation);
+						break;
+					case "bid":
+						// Read auction ID and bid amount from user
+						System.out.println(INPUT_AUCTION_ID);
+						id = scanner.nextInt();
+						scanner.nextLine(); // consume newline character
+						System.out.println("Enter bid amount:");
+						double bidAmount = scanner.nextDouble();
+						scanner.nextLine(); // consume newline character
+						out.println(command + " " + id + " " + bidAmount);
+						// Read response from server
+						String response = in.readLine();
+						System.out.println(response);
+						break;
+					case "check":
+						// Read auction ID from user
+						System.out.println(INPUT_AUCTION_ID);
+						id = scanner.nextInt();
+						scanner.nextLine(); // consume newline character
+
+						// Send auction ID to server
+						out.println(command + " " + id);
+
+						// Receive highest bid and server time from server
+						String highestBid = in.readLine();
+						System.out.println(highestBid);
+						break;
+					case "withdraw":
+						// Read auction ID from user
+						System.out.println(INPUT_AUCTION_ID);
+						id = scanner.nextInt();
+						scanner.nextLine(); // consume newline character
+
+						// Send command and auction ID to server
+						out.println(command + " " + id);
+
+						// Receive response from server
+						response = in.readLine();
+						System.out.println(response);
+						break;
+					case "disconnect":
+						out.println(command);
+						// Receive goodbye message from server
+						System.out.println(in.readLine());
+						return;
+					default:
+						out.println(command);
+						break;
 				}
-			} while (!scanner.hasNextLine() || !scanner.hasNext("[yn]"));
-
-		} catch (Exception e) {
-
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-
-	}
-
-	public static void main(String[] args) throws Exception {
-
-		AuctionClient ac = new AuctionClient();
-
-		ac.connectToAuctionServer();
-		ac.displayMenu();
 	}
 }
