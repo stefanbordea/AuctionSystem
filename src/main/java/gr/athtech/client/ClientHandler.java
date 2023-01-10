@@ -26,6 +26,7 @@ public class ClientHandler implements Runnable {
 	public ClientHandler(Socket socket) {
 		this.socket = socket;
 		registeredAuctions = new ArrayList<>();
+
 	}
 
 	// Send message to client
@@ -57,9 +58,11 @@ public class ClientHandler implements Runnable {
 
 	@Override
 	public void run() {
+		String clientIP = socket.getInetAddress().getHostAddress();
+
 		try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			 PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-
+			//			if (!socket.getInputStream().equals("Rejecting new connection")) {
 			// Send welcome message to client
 			out.println("Welcome to the auction server " + socket.getInetAddress().getHostAddress() + "!");
 
@@ -108,11 +111,11 @@ public class ClientHandler implements Runnable {
 							StringBuilder sb = new StringBuilder();
 							for (Auction activeAuction : AuctionServer.getAuctions().values()) {
 								sb.append("Auction ID: ").append(activeAuction.getId()).append(" ").append(
-										  "Item name: ").append(activeAuction.getItemName()).append(" ").append(
-										  "Item description: ").append(activeAuction.getItemDescription()).append(" ")
+										"Item name: ").append(activeAuction.getItemName()).append(" ").append(
+										"Item description: ").append(activeAuction.getItemDescription()).append(" ")
 								  .append("Starting price: ").append(activeAuction.getStartingPrice()).append(" ")
 								  .append("Highest bid: ").append(activeAuction.getHighestBid()).append(" ").append(
-										  "Seller ID: ").append(activeAuction.getSellerIp()).append("\n");
+										"Seller ID: ").append(activeAuction.getSellerIp()).append("\n");
 							}
 							out.println(sb);
 							break;
@@ -156,7 +159,7 @@ public class ClientHandler implements Runnable {
 							// Get auction and current highest bid
 							auction = AuctionServer.getAuctions().get(Integer.parseInt(args[0]));
 							double highestBid = 0;
-							if(auction != null){
+							if (auction != null) {
 								highestBid = auction.getHighestBid();
 							}
 
@@ -201,11 +204,9 @@ public class ClientHandler implements Runnable {
 
 							// Send highest bid and server time to client
 							out.println("Highest Bid: " + highestBid + " timestamp: " + auction.getTime() +
-												" remaining time: " + duration.abs()
-																		.toString()
-																		.substring(2)
-																		.replaceAll("(\\d[HMS])(?!$)", "$1 ")
-																		.toLowerCase());
+												" remaining time: " + duration.abs().toString().substring(2)
+																			  .replaceAll("(\\d[HMS])(?!$)", "$1 ")
+																			  .toLowerCase());
 							break;
 						case "withdraw":
 							// Check if client is registered in the auction
@@ -244,10 +245,13 @@ public class ClientHandler implements Runnable {
 							out.println("Invalid command");
 					}
 				}
+				//	}
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+
+		} catch (IOException ioException) {
+			ioException.printStackTrace();
 		}
 
 	}
+
 }

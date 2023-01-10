@@ -55,11 +55,14 @@ public class Auction {
 			public void run() {
 				// Send message to all registered clients that the auction has closed
 				for (ClientHandler handler : getHandlers().values()) {
-					handler.sendMessage("Auction " + id + " has closed. Item " + itemName + " was sold for " + highestBid + " to participant " + highestBidderIp);
+					handler.sendMessage(
+							"Auction " + id + " has closed. Item " + itemName + " was sold for " + highestBid +
+									" to participant " + highestBidderIp);
 				}
 				// Remove auction from active auctions
 				AuctionServer.getAuctions().remove(id);
 			}
 		}, this.getClosingTime() * 60000L);
 	}
+
 }
