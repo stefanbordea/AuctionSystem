@@ -91,7 +91,10 @@ public class ClientHandler implements Runnable {
 							if (args[3].equals("time")) {
 								auction.setClosingTime(Integer.parseInt(args[4]));
 								auction.closeOnTimeExpiry();
-							} else if (!args[3].equals("bid")) {
+							} else if (args[3].equals("bid")) {
+								auction.setClosingTime(Integer.parseInt(args[4]));
+								auction.closeOnTimeExpiryServer();
+							} else {
 								out.println("Invalid closing type");
 								break;
 							}
@@ -156,7 +159,7 @@ public class ClientHandler implements Runnable {
 							// Get auction and current highest bid
 							auction = AuctionServer.getAuctions().get(Integer.parseInt(args[0]));
 							double highestBid = 0;
-							if(auction != null){
+							if (auction != null) {
 								highestBid = auction.getHighestBid();
 							}
 
@@ -175,11 +178,6 @@ public class ClientHandler implements Runnable {
 								handler.sendMessage("NEW BID for auction with ID: " + auction.getId() + " for ITEM " +
 															auction.getItemName() + " BID: " + args[1] + " BIDDER: " +
 															socket.getInetAddress().getHostAddress());
-							}
-
-							// Reset timer for "going once" and "going twice" messages
-							if (auction.getClosingType().equals("bid")) {
-								auction.setTimer(System.currentTimeMillis() + 300000);
 							}
 							break;
 						case "check":
@@ -201,11 +199,9 @@ public class ClientHandler implements Runnable {
 
 							// Send highest bid and server time to client
 							out.println("Highest Bid: " + highestBid + " timestamp: " + auction.getTime() +
-												" remaining time: " + duration.abs()
-																		.toString()
-																		.substring(2)
-																		.replaceAll("(\\d[HMS])(?!$)", "$1 ")
-																		.toLowerCase());
+												" remaining time: " + duration.abs().toString().substring(2)
+																			  .replaceAll("(\\d[HMS])(?!$)", "$1 ")
+																			  .toLowerCase());
 							break;
 						case "withdraw":
 							// Check if client is registered in the auction

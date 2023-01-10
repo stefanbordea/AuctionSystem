@@ -42,17 +42,13 @@ public class AuctionClient {
 						scanner.nextLine(); // consume newline character
 						System.out.println("Enter closing type (time or bid):");
 						String closingType = scanner.nextLine().toLowerCase().trim();
-						if (closingType.equals("time")) {
+						if (closingType.equals("time") || closingType.equals("bid")) {
 							System.out.println("Enter closing time in minutes:");
 							int closingTime = scanner.nextInt();
 							scanner.nextLine(); // consume newline character
 							// Send command and item details to server
 							out.println(command + " " + itemName + " " + itemDescription + " " + startingPrice + " " +
 												closingType + " " + closingTime);
-						} else {
-							// Send command and item details to server
-							out.println(command + " " + itemName + " " + itemDescription + " " + startingPrice + " " +
-												closingType);
 						}
 						// Receive auction ID from server
 						int auctionId = Integer.parseInt(in.readLine());
