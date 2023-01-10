@@ -108,4 +108,63 @@ public class Auction {
 			}
 		}, this.getClosingTime() * 60000L);
 	}
+
+	public void runBidBasedAuction() {
+		Timer[] timer = {new Timer()};
+		Double currentBid = highestBid;
+		timer[0].schedule(new TimerTask() {
+			@Override
+			public void run() {
+				if (currentBid >= highestBid) {
+					timer[0].cancel();
+					timer[0] = new Timer();
+					timer[0].schedule(this, 5000);
+				} else {
+					// Timer expired, send "going once" message to registered clients
+					for (ClientHandler handler : getHandlers().values()) {
+						handler.sendMessage(
+								"Last bid for item " + itemName + " was price " + highestBid + ": " + "going once");
+					}
+					timer[0].cancel();
+					timer[0] = new Timer();
+					timer[0].schedule(new TimerTask() {
+						@Override
+						public void run() {
+							if (currentBid >= highestBid) {
+								timer[0].cancel();
+								timer[0] = new Timer();
+								timer[0].schedule(this, 5000);
+							} else {
+								for (ClientHandler handler : getHandlers().values()) {
+									handler.sendMessage(
+											"Last bid for item " + itemName + " was price " + highestBid + ": " + "going " +
+													"twice");
+								}
+								timer[0].cancel();
+								timer[0] = new Timer();
+								timer[0].schedule(new TimerTask() {
+									@Override
+									public void run() {
+										if (currentBid >= highestBid) {
+											timer[0].cancel();
+											timer[0] = new Timer();
+											timer[0].schedule(this, 5000);
+										} else {
+											for (ClientHandler handler : getHandlers().values()) {
+												handler.sendMessage(
+														"Auction " + id + " has closed. Item " + itemName + " was sold for " + highestBid +
+																" to participant " + highestBidderIp);
+											}
+											// Remove auction from active auctions
+											AuctionServer.getAuctions().remove(id);
+										}
+									}
+								}, 5000);
+							}
+						}
+					}, 5000);
+				}
+			}
+		}, closingTime);
+	}
 }

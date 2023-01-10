@@ -93,7 +93,7 @@ public class ClientHandler implements Runnable {
 								auction.closeOnTimeExpiry();
 							} else if (args[3].equals("bid")) {
 								auction.setClosingTime(Integer.parseInt(args[4]));
-								auction.closeOnTimeExpiryServer();
+								auction.runBidBasedAuction();
 							} else {
 								out.println("Invalid closing type");
 								break;
@@ -102,6 +102,7 @@ public class ClientHandler implements Runnable {
 
 							// Set seller IP for auction
 							auction.setSellerIp(socket.getInetAddress().getHostAddress());
+							auction.addClient(this);
 
 							// Send auction ID to client
 							out.println(auction.getId());
