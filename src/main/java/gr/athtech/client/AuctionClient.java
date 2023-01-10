@@ -18,115 +18,126 @@ public class AuctionClient {
 			 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			 PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
-			// Receive welcome message from server
-			System.out.println(in.readLine());
+			if (in.equals("Rejecting new connection")) {
 
-			// Set up scanner for reading user input
-			Scanner scanner = new Scanner(System.in);
+				System.out.println(
+						"A connection from your IP address " + socket + " is already in progress. Please try " +
+								"again later. Or close any other open connection to continue");
+				socket.close();
 
-			while (true) {
-				// Prompt user for action
-				System.out.println("Enter command (advertise, list, register, bid, check, withdraw, disconnect):");
-				String command = scanner.nextLine().trim();
+			} else {
+				// Receive welcome message from server
+				System.out.println(in.readLine());
 
-				// Process response from server
-				switch (command) {
-					case "advertise":
-						// Read item name, description, starting price, and closing type from user
-						System.out.println("Enter item name:");
-						String itemName = scanner.nextLine().replace(" ", "_");
-						System.out.println("Enter item description:");
-						String itemDescription = scanner.nextLine().replace(" ", "_");
-						System.out.println("Enter starting price:");
-						double startingPrice = scanner.nextDouble();
-						scanner.nextLine(); // consume newline character
-						System.out.println("Enter closing type (time or bid):");
-						String closingType = scanner.nextLine().toLowerCase().trim();
-						if (closingType.equals("time")) {
-							System.out.println("Enter closing time in minutes:");
-							int closingTime = scanner.nextInt();
+				// Set up scanner for reading user input
+				Scanner scanner = new Scanner(System.in);
+
+				while (true) {
+					// Prompt user for action
+					System.out.println("Enter command (advertise, list, register, bid, check, withdraw, disconnect):");
+					String command = scanner.nextLine().trim();
+
+					// Process response from server
+					switch (command) {
+						case "advertise":
+							// Read item name, description, starting price, and closing type from user
+							System.out.println("Enter item name:");
+							String itemName = scanner.nextLine().replace(" ", "_");
+							System.out.println("Enter item description:");
+							String itemDescription = scanner.nextLine().replace(" ", "_");
+							System.out.println("Enter starting price:");
+							double startingPrice = scanner.nextDouble();
 							scanner.nextLine(); // consume newline character
-							// Send command and item details to server
-							out.println(command + " " + itemName + " " + itemDescription + " " + startingPrice + " " +
+							System.out.println("Enter closing type (time or bid):");
+							String closingType = scanner.nextLine().toLowerCase().trim();
+							if (closingType.equals("time")) {
+								System.out.println("Enter closing time in minutes:");
+								int closingTime = scanner.nextInt();
+								scanner.nextLine(); // consume newline character
+								// Send command and item details to server
+								out.println(
+										command + " " + itemName + " " + itemDescription + " " + startingPrice + " " +
 												closingType + " " + closingTime);
-						} else {
-							// Send command and item details to server
-							out.println(command + " " + itemName + " " + itemDescription + " " + startingPrice + " " +
+							} else {
+								// Send command and item details to server
+								out.println(
+										command + " " + itemName + " " + itemDescription + " " + startingPrice + " " +
 												closingType);
-						}
-						// Receive auction ID from server
-						int auctionId = Integer.parseInt(in.readLine());
-						System.out.println("Auction ID: " + auctionId);
-						break;
-					case "list":
-						out.println(command);
-						// Receive list of active auctions from server
-						String line;
-						while ((line = in.readLine()) != null && !line.isEmpty()) {
-							String auction = line;
-							System.out.println(auction);
-						}
-						break;
-					case "register":
-						// Read auction ID from user
-						System.out.println(INPUT_AUCTION_ID);
-						int id = scanner.nextInt();
-						scanner.nextLine(); // consume newline character
+							}
+							// Receive auction ID from server
+							int auctionId = Integer.parseInt(in.readLine());
+							System.out.println("Auction ID: " + auctionId);
+							break;
+						case "list":
+							out.println(command);
+							// Receive list of active auctions from server
+							String line;
+							while ((line = in.readLine()) != null && !line.isEmpty()) {
+								String auction = line;
+								System.out.println(auction);
+							}
+							break;
+						case "register":
+							// Read auction ID from user
+							System.out.println(INPUT_AUCTION_ID);
+							int id = scanner.nextInt();
+							scanner.nextLine(); // consume newline character
 
-						// Send auction ID to server
-						out.println(command + " " + id);
+							// Send auction ID to server
+							out.println(command + " " + id);
 
-						// Receive registration confirmation from server
-						String confirmation = in.readLine();
-						System.out.println(confirmation);
-						break;
-					case "bid":
-						// Read auction ID and bid amount from user
-						System.out.println(INPUT_AUCTION_ID);
-						id = scanner.nextInt();
-						scanner.nextLine(); // consume newline character
-						System.out.println("Enter bid amount:");
-						double bidAmount = scanner.nextDouble();
-						scanner.nextLine(); // consume newline character
-						out.println(command + " " + id + " " + bidAmount);
-						// Read response from server
-						String response = in.readLine();
-						System.out.println(response);
-						break;
-					case "check":
-						// Read auction ID from user
-						System.out.println(INPUT_AUCTION_ID);
-						id = scanner.nextInt();
-						scanner.nextLine(); // consume newline character
+							// Receive registration confirmation from server
+							String confirmation = in.readLine();
+							System.out.println(confirmation);
+							break;
+						case "bid":
+							// Read auction ID and bid amount from user
+							System.out.println(INPUT_AUCTION_ID);
+							id = scanner.nextInt();
+							scanner.nextLine(); // consume newline character
+							System.out.println("Enter bid amount:");
+							double bidAmount = scanner.nextDouble();
+							scanner.nextLine(); // consume newline character
+							out.println(command + " " + id + " " + bidAmount);
+							// Read response from server
+							String response = in.readLine();
+							System.out.println(response);
+							break;
+						case "check":
+							// Read auction ID from user
+							System.out.println(INPUT_AUCTION_ID);
+							id = scanner.nextInt();
+							scanner.nextLine(); // consume newline character
 
-						// Send auction ID to server
-						out.println(command + " " + id);
+							// Send auction ID to server
+							out.println(command + " " + id);
 
-						// Receive highest bid and server time from server
-						String highestBid = in.readLine();
-						System.out.println(highestBid);
-						break;
-					case "withdraw":
-						// Read auction ID from user
-						System.out.println(INPUT_AUCTION_ID);
-						id = scanner.nextInt();
-						scanner.nextLine(); // consume newline character
+							// Receive highest bid and server time from server
+							String highestBid = in.readLine();
+							System.out.println(highestBid);
+							break;
+						case "withdraw":
+							// Read auction ID from user
+							System.out.println(INPUT_AUCTION_ID);
+							id = scanner.nextInt();
+							scanner.nextLine(); // consume newline character
 
-						// Send command and auction ID to server
-						out.println(command + " " + id);
+							// Send command and auction ID to server
+							out.println(command + " " + id);
 
-						// Receive response from server
-						response = in.readLine();
-						System.out.println(response);
-						break;
-					case "disconnect":
-						out.println(command);
-						// Receive goodbye message from server
-						System.out.println(in.readLine());
-						return;
-					default:
-						out.println(command);
-						break;
+							// Receive response from server
+							response = in.readLine();
+							System.out.println(response);
+							break;
+						case "disconnect":
+							out.println(command);
+							// Receive goodbye message from server
+							System.out.println(in.readLine());
+							return;
+						default:
+							out.println(command);
+							break;
+					}
 				}
 			}
 		} catch (IOException e) {

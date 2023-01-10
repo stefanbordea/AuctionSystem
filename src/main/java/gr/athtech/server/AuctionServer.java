@@ -5,12 +5,15 @@ import gr.athtech.client.ClientHandler;
 import lombok.Getter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -46,17 +49,40 @@ public class AuctionServer {
 
 	public static void main(String[] args) {
 		// Create server socket for accepting incoming connections
+
 		try (ServerSocket serverSocket = new ServerSocket(3000)) {
 
 			// Create thread pool for handling client requests concurrently
 			ExecutorService pool = Executors.newFixedThreadPool(10);
 
+			// Create a Set to store the unique IP addresses of clients
+			Set<String> uniqueIPs = new HashSet<>();
+
 			while (true) {
 				// Listen for incoming connection and create a new thread for each incoming connection
 				Socket socket = serverSocket.accept();
-				ClientHandler handler = new ClientHandler(socket);
-				pool.execute(handler);
+
+				// Get the client's IP address
+				String clientIP = socket.getInetAddress().getHostAddress();
+
+				// Check if the IP address is already in the Set of unique IPs
+				if (uniqueIPs.contains(clientIP)) {
+					// If the IP address is already in the Set, there is already a thread running the connection from this client
+					PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+					out.println("Rejecting new connection");
+					out.flush();
+					System.out.println(
+							"Connection from client " + clientIP + " already in progress. Rejecting new connection.");
+					socket.close();
+				} else {
+					// If the IP address is not in the Set, add it and create a new thread for the connection
+					System.out.println("Connecting");
+					uniqueIPs.add(clientIP);
+					ClientHandler handler = new ClientHandler(socket);
+					pool.execute(handler);
+				}
 			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
